@@ -13,6 +13,7 @@ struct WeatherData : Decodable {
     let main: Main
     let wind: Wind
     let sys: Sys
+    let timezone: Int
 }
 
 //MARK: - Weather
@@ -27,7 +28,6 @@ struct Main : Decodable {
     let tempMin: Double
     let tempMax: Double
     let feelsLike: Double
-    let humidity: Int
     
     // Use CodingKeys to map the JSON keys to Swift properties
     enum CodingKeys: String, CodingKey {
@@ -35,7 +35,6 @@ struct Main : Decodable {
         case tempMin = "temp_min"
         case tempMax = "temp_max"
         case feelsLike = "feels_like"
-        case humidity
     }
 }
 
