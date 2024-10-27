@@ -7,6 +7,7 @@
 
 import Foundation
 
+// Main model for weather data response
 struct WeatherData: Codable {
     let name: String
     let weather: [Weather]
@@ -16,20 +17,20 @@ struct WeatherData: Codable {
     let timezone: Int
 }
 
-//MARK: - Weather
+//MARK: - General weather conditions
 struct Weather: Codable {
     let id: Int
     let description: String
 }
 
-//MARK: - Main
+//MARK: - Main temperature data
 struct Main: Codable {
     let temp: Double
     let tempMin: Double
     let tempMax: Double
     let feelsLike: Double
     
-    // Use CodingKeys to map the JSON keys to Swift properties
+    // Maps the JSON keys to Swift properties
     enum CodingKeys: String, CodingKey {
         case temp
         case tempMin = "temp_min"
@@ -38,13 +39,13 @@ struct Main: Codable {
     }
 }
 
-//MARK: - Wind
+//MARK: - Wind details
 struct Wind: Codable {
     let speed: Double
     let deg: Int
 }
 
-//MARK: - Sys
+//MARK: - Sunrise and sunset items
 struct Sys: Codable {
     let sunrise: Double
     let sunset: Double

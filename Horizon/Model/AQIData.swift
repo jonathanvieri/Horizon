@@ -7,17 +7,18 @@
 
 import Foundation
 
+// Main model for AQI data response
 struct AQIData: Codable {
     let list: [AQIItem]
 }
 
-//MARK: - AQIItem
+//MARK: - AQI item details
 struct AQIItem: Codable {
     let main: AQIMain
     let dt: Int
 }
 
-//MARK: - AQIMain
+//MARK: - Main AQI index value
 struct AQIMain: Codable {
     let aqi: Int
 }
