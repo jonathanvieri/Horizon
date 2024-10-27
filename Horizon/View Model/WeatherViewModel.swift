@@ -93,7 +93,7 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
             switch result {
             case .success(let weather):
                 self.weatherData = weather
-                self.userPreferences.saveLastFetchTime()
+                self.userPreferences.saveLastWeatherFetchTime()
                 self.userPreferences.saveCachedWeatherData(weather)
                 self.isOffline = false
                 self.errorMessage = nil
@@ -174,7 +174,7 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // Method for checking if we should use cached data or not
     private func shouldUseCachedData() -> WeatherData? {
-        guard let lastFetchTime = userPreferences.getLastFetchTime(),
+        guard let lastFetchTime = userPreferences.getLastWeatherFetchTime(),
               let cachedData = userPreferences.getCachedWeatherData() else { return nil }
         
         let currentTime = Date().timeIntervalSince1970

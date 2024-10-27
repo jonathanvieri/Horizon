@@ -9,17 +9,28 @@ import Foundation
 
 class UserPreferences {
     // Keys
-    private let lastFetchTimeKey = "lastFetchTime"
+    private let lastWeatherFetchTimeKey = "lastWeatherFetchTime"
     private let cachedWeatherDataKey = "cachedWeatherData"
+    private let lastAQIFetchTimeKey = "lastAQIFetchTime"
+    private let cachedAQIDataKey = "cachedAQIData"
     
     // Last fetch
-    func saveLastFetchTime() {
+    func saveLastWeatherFetchTime() {
         let currentTime = Date().timeIntervalSince1970
-        UserDefaults.standard.set(currentTime, forKey: lastFetchTimeKey)
+        UserDefaults.standard.set(currentTime, forKey: lastWeatherFetchTimeKey)
     }
     
-    func getLastFetchTime() -> Double? {
-        return UserDefaults.standard.double(forKey: lastFetchTimeKey)
+    func getLastWeatherFetchTime() -> Double? {
+        return UserDefaults.standard.double(forKey: lastWeatherFetchTimeKey)
+    }
+    
+    func saveLastAQIFetchTime() {
+        let currentTime = Date().timeIntervalSince1970
+        UserDefaults.standard.set(currentTime, forKey: lastAQIFetchTimeKey)
+    }
+    
+    func getLastAQIFetchTime() -> Double? {
+        return UserDefaults.standard.double(forKey: lastAQIFetchTimeKey)
     }
     
     // Caching data
@@ -32,6 +43,21 @@ class UserPreferences {
     func getCachedWeatherData() -> WeatherData? {
         if let savedData = UserDefaults.standard.data(forKey: cachedWeatherDataKey),
            let decodedData = try? JSONDecoder().decode(WeatherData.self, from: savedData) {
+            return decodedData
+        }
+        return nil
+    }
+    
+    func saveCachedAQIData(_ data: AQIData) {
+        if let encodedData = try? JSONEncoder().encode(data) {
+            UserDefaults.standard.set(encodedData, forKey: cachedAQIDataKey)
+        }
+        
+    }
+    
+    func getCachedAQIData() -> AQIData? {
+        if let savedData = UserDefaults.standard.data(forKey: cachedAQIDataKey),
+           let decodedData = try? JSONDecoder().decode(AQIData.self, from: savedData) {
             return decodedData
         }
         return nil
