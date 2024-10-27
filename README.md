@@ -26,7 +26,13 @@
 
 ## Technical Overview
 - **SwiftUI**: Used for building the user interface, with a focus on simplicity and responsiveness.
-- 
+- **MVVM**: Implements MVVM architecture to ensure a clean separation of concerns, making the app modular, testable, and easier to maintain.
+- **CoreLocation Framework**: Enables location-based weather tracking by managing user location permissions and updates.
+- **UserDefaults**: Used for persistent storage of user preferences, such as selected units, default city, and caching weather data for offline access.
+- **URLSession**: Handles network requests to fetch real-time weather and AQI data from the OpenWeather API.
+- **Push Notifications**: Allows users to receive daily weather updates at a scheduled time.
+- **Custom Toolbar**: Designed using SwiftUI’s Toolbar API for quick access to core actions like location, refresh, search, and settings.
+- **Data Caching**: Caches fetched weather data for offline access, reducing network requests and improving data availability in low-bandwidth conditions.
 
 ## Usage
 
