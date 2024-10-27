@@ -20,6 +20,7 @@ class AQIViewModel: ObservableObject {
     @Published var hasError: Bool = false
     @Published var isLoading: Bool = false
     
+    // Fetches AQI Data based on the provided location
     func fetchAQIData(for location: CLLocation) {
         // Check if we can use cached data
         if let cachedData = shouldUseCachedAQIData() {
@@ -28,13 +29,9 @@ class AQIViewModel: ObservableObject {
             return
         }
         
-        // Fetch new data if cache is outdated or does not exist
-        aqiValue = 0
-        aqiDescription = "Loading..."
-        errorMessage = nil
-        hasError = false
+        resetAQIValues()
         isLoading = true
-        
+      
         let lat = location.coordinate.latitude
         let lon = location.coordinate.longitude
         
@@ -55,7 +52,7 @@ class AQIViewModel: ObservableObject {
     }
     
     
-    // Method for getting description from AQI value
+    // Converts AQI integer value to a descriptive string
     private func aqiToDescription(for aqi: Int) -> String {
         switch aqi {
         case 1:
@@ -73,7 +70,7 @@ class AQIViewModel: ObservableObject {
         }
     }
     
-    // Method for getting color from AQI value
+    // Converts AQI integer value to a corresponding color
     private func aqiToColor(for aqi: Int) -> Color {
         switch aqi {
         case 1:
@@ -124,5 +121,13 @@ class AQIViewModel: ObservableObject {
             aqiDescription = aqiToDescription(for: aqi)
             aqiColor = aqiToColor(for: aqi)
         }
+    }
+    
+    // Resets AQI Values to their default values
+    private func resetAQIValues() {
+        aqiValue = 0
+        aqiDescription = "Loading..."
+        errorMessage = nil
+        hasError = false
     }
 }

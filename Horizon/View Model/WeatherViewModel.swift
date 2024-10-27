@@ -8,8 +8,7 @@
 import Foundation
 import CoreLocation
 
-class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
-
+class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let weatherService = WeatherService()
     private let locationManager = CLLocationManager()
     private let userPreferences = UserPreferences()
@@ -24,84 +23,69 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     override init() {
         super.init()
-        self.locationManager.delegate = self
-        self.locationManager.requestWhenInUseAuthorization()
-        self.locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        self.locationManager.startUpdatingLocation()
+        configureLocationManager()
     }
     
-    // Fetch current weather data using Latitude and Longitude
+    // Configures the location manager with necessary settings
+    private func configureLocationManager() {
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.startUpdatingLocation()
+    }
+    
+    // Fetches current weather data using latitude and longitude.
     func fetchWeather(for location: CLLocationCoordinate2D) {
-        
-        // Check if cached data can be used
         if let cachedData = shouldUseCachedData() {
             print("Using cached data")
-            self.weatherData = cachedData
-            self.isOffline = false
+            updateWeatherData(with: cachedData, isOffline: false)
             return
         }
         
-        // Fetch new data from API if cached data is outdated or does not exist
-        isLoading = true
-        errorMessage = nil
-        print("Fetching new data")
-        let units = UserPreferences.loadUnits()
-        
-        weatherService.fetchWeatherData(lat: location.latitude, lon: location.longitude, units: units) { [weak self] result in
-            self?.handleWeatherResult(result)
-        }
+        resetWeatherState()
+        fetchWeatherData(latitude: location.latitude, longitude: location.longitude)
     }
     
-    // Fetch current weather data using City name
+    // Fetches current weather data using a city name
     func fetchWeather(for city: String) {
-        
-        // Check if cached data can be used
         if let cachedData = shouldUseCachedData() {
             print("Using cached data")
-            self.weatherData = cachedData
-            self.isOffline = false
+            updateWeatherData(with: cachedData, isOffline: false)
             return
         }
         
-        // Fetch new data from API if cached data is outdated or does not exist
-        isLoading = true
-        errorMessage = nil
-        
+        resetWeatherState()
+        fetchWeatherData(cityName: city)
+    }
+    
+    // Performs the network request for weather data based on coordinates
+    private func fetchWeatherData(latitude: Double, longitude: Double) {
         let units = UserPreferences.loadUnits()
-        
-        weatherService.fetchWeatherData(cityName: city, units: units) { [weak self] result in
+        weatherService.fetchWeatherData(lat: latitude, lon: longitude, units: units) { [weak self] result in
             self?.handleWeatherResult(result)
         }
     }
     
-    // Fetch current weather data using city name with completion callback
-    func fetchWeather(for city: String, completion: @escaping (Result<WeatherData, WeatherServiceError>) -> Void) {
+    // Performs the network request for weather data based on city name
+    private func fetchWeatherData(cityName: String) {
         let units = UserPreferences.loadUnits()
-        
-        weatherService.fetchWeatherData(cityName: city, units: units) { result in
-            DispatchQueue.main.async {
-                completion(result)
-            }
+        weatherService.fetchWeatherData(cityName: cityName, units: units) { [weak self] result in
+            self?.handleWeatherResult(result)
         }
     }
     
+    // Handles the result of a weather data fetch request
     private func handleWeatherResult(_ result: Result<WeatherData, WeatherServiceError>) {
-        
         DispatchQueue.main.async {
             self.isLoading = false
-            
             switch result {
             case .success(let weather):
-                self.weatherData = weather
+                self.updateWeatherData(with: weather, isOffline: false)
                 self.userPreferences.saveLastWeatherFetchTime()
                 self.userPreferences.saveCachedWeatherData(weather)
-                self.isOffline = false
-                self.errorMessage = nil
             case .failure(let error):
-                // If fetch fails, load cached data if exist
-                self.isOffline = true
                 self.handleWeatherServiceError(error)
-                
+                self.isOffline = true
                 if let cachedData = self.userPreferences.getCachedWeatherData() {
                     self.weatherData = cachedData
                 }
@@ -109,7 +93,30 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Method for handling Weather Service errors
+    // Updates the weather data and connectivity status
+    private func updateWeatherData(with data: WeatherData, isOffline: Bool) {
+        weatherData = data
+        self.isOffline = isOffline
+    }
+    
+    // Clears previous weather data and resets the loading state
+    private func resetWeatherState() {
+        weatherData = nil
+        errorMessage = nil
+        isLoading = true
+    }
+    
+    // Checks whether cached data is valid and returns it if available
+    private func shouldUseCachedData() -> WeatherData? {
+        guard let lastFetchTime = userPreferences.getLastWeatherFetchTime(),
+              let cachedData = userPreferences.getCachedWeatherData(),
+              Date().timeIntervalSince1970 - lastFetchTime < cacheDuration else {
+            return nil
+        }
+        return cachedData
+    }
+    
+    // Handles any errors returned by the WeatherService and sets the error message
     private func handleWeatherServiceError(_ error: WeatherServiceError) {
         switch error {
         case .invalidURL:
@@ -127,10 +134,9 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Called when the location manager updates the user's location
+    // MARK: - CLLocationManagerDelegate Methods
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-    
         DispatchQueue.main.async {
             self.userLocation = location.coordinate
             self.fetchWeather(for: location.coordinate)
@@ -138,13 +144,11 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Called when location authorization status changes
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
-            self.locationManager.startUpdatingLocation()
+            locationManager.startUpdatingLocation()
         case .denied, .restricted:
-            print("Location access denied by user")
             DispatchQueue.main.async {
                 self.locationDenied = true
                 self.errorMessage = "Location access is denied. Please enable it in Settings."
@@ -154,31 +158,10 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    // Called when fails to get user location
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         print("Failed to get user location: \(error.localizedDescription)")
         DispatchQueue.main.async {
             self.errorMessage = "Unable to get your location. Please try again later."
         }
-    }
-    
-    // Method for user to manually request their current location
-    func requestLocation() {
-        locationManager.requestLocation()
-    }
-    
-    // Will and should be called ONLY if the user wants to setup daily notifications
-    func requestAlwaysAuthorization() {
-        locationManager.requestAlwaysAuthorization()
-    }
-    
-    // Method for checking if we should use cached data or not
-    private func shouldUseCachedData() -> WeatherData? {
-        guard let lastFetchTime = userPreferences.getLastWeatherFetchTime(),
-              let cachedData = userPreferences.getCachedWeatherData() else { return nil }
-        
-        let currentTime = Date().timeIntervalSince1970
-        let isCacheValid = (currentTime - lastFetchTime) < cacheDuration
-        return isCacheValid ? cachedData : nil
     }
 }

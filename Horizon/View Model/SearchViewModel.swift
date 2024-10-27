@@ -16,15 +16,15 @@ class SearchViewModel: ObservableObject {
     
     private let weatherService = WeatherService()
     
-    // Search weather data based on the city
+    // Searches for weather data based on the city
     func searchWeather(for city: String) {
-        // Check for empty inputs
-        guard !city.isEmpty else {return}
+        guard !city.isEmpty else {
+            errorMessage = "Please enter a city name."
+            hasError = true
+            return
+        }
         
-        // Clear previous data and errors
-        weatherData = nil
-        errorMessage = nil
-        hasError = false
+        resetSearchResults()
         isLoading = true
         
         let units = UserPreferences.loadUnits()
@@ -43,7 +43,7 @@ class SearchViewModel: ObservableObject {
         }
     }
     
-    // Method for handling any errors returned by Weather Service
+    // Handles any errors returned by WeatherService and updates the error message
     private func handleWeatherServiceError(_ error: WeatherServiceError) {
         switch error {
         case .invalidURL:
@@ -55,11 +55,16 @@ class SearchViewModel: ObservableObject {
         case .noData:
             errorMessage = "No data received. Please try again."
         case .cityNotFound:
-            errorMessage = "City not found, please ensure you have entered a valid city."
+            errorMessage = "City not found. Please ensure you have entered a valid city."
         case .decodingError(let decodingError):
             errorMessage = "Failed to parse data: \(decodingError.localizedDescription)"
         }
     }
     
-    
+    // Resets search results and error states before a new search
+    private func resetSearchResults() {
+        weatherData = nil
+        errorMessage = nil
+        hasError = false
+    }
 }
