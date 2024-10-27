@@ -3,6 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to show you weather updates while using the app</string>
+	<string>Your location is needed to provide accurate weather updates while using the app</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Enable background location access to receive regular weather notifications based on your location</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Enable background location access to receive regular weather notifications based on your location</string>
 </dict>
 </plist>
