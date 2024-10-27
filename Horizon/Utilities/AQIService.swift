@@ -18,23 +18,13 @@ enum AQIServiceError: Error {
 class AQIService : ObservableObject {
     private let apiKey = K.apiKey
     private let baseUrl = K.baseUrl
-
+    
+    // Fetch AQI data based on latitude and longitude
     func fetchAQIData(lat: Double, lon: Double, completion: @escaping (Result<AQIData, AQIServiceError>) -> Void) {
-        // Construct URL String and ensure the URL is valid
-        var components = URLComponents(string: baseUrl)
-        components?.path.append("/air_pollution")
-        components?.queryItems = [
-            URLQueryItem(name: "lat", value: String(lat)),
-            URLQueryItem(name: "lon", value: String(lon)),
-            URLQueryItem(name: "appid", value: apiKey)
-        ]
-        
-        guard let url = components?.url else {
+        guard let url = createAQIURL(lat: lat, lon: lon) else {
             completion(.failure(.invalidURL))
             return
         }
-        
-        print("URL: \(url)")
         
         // Perform network request
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
@@ -43,32 +33,39 @@ class AQIService : ObservableObject {
             if let error = error as? URLError {
                 completion(.failure(.networkError(error)))
                 return
-            } else if let response = response as? HTTPURLResponse, response.statusCode != 200 {
+            }
+            if let response = response as? HTTPURLResponse, response.statusCode != 200 {
                 completion(.failure(.serverError(statusCode: response.statusCode)))
                 return
             }
             
-            // Ensure we received data
+            // Ensure we received data and it is present
             guard let data = data else {
                 completion(.failure(.noData))
                 return
             }
-                    
+            
             // If there are no errors, decode the JSON response into AQIData
             do {
                 let decoder = JSONDecoder()
                 let aqiData = try decoder.decode(AQIData.self, from: data)
-                
-                // Return the decoded data as weather data to the completion handler
                 completion(.success(aqiData))
-                
-                
             } catch {
                 completion(.failure(.decodingError(error)))
             }
         }
-        
-        // Start the task
         task.resume()
+    }
+    
+    // Constructs the URL for fetching AQI data
+    private func createAQIURL(lat: Double, lon: Double) -> URL? {
+        var components = URLComponents(string: baseUrl)
+        components?.path.append("/air_pollution")
+        components?.queryItems = [
+            URLQueryItem(name: "lat", value: String(lat)),
+            URLQueryItem(name: "lon", value: String(lon)),
+            URLQueryItem(name: "appid", value: apiKey)
+        ]
+        return components?.url
     }
 }

@@ -8,110 +8,116 @@
 import Foundation
 
 class UserPreferences {
-    // Keys
-    private let lastWeatherFetchTimeKey = "lastWeatherFetchTime"
-    private let cachedWeatherDataKey = "cachedWeatherData"
-    private let lastAQIFetchTimeKey = "lastAQIFetchTime"
-    private let cachedAQIDataKey = "cachedAQIData"
     
-    // Last fetch
+    //MARK: - Keys
+    private static let lastWeatherFetchTimeKey = "lastWeatherFetchTime"
+    private static let cachedWeatherDataKey = "cachedWeatherData"
+    private static let lastAQIFetchTimeKey = "lastAQIFetchTime"
+    private static let cachedAQIDataKey = "cachedAQIData"
+    
+    private static let defaultCityKey = "defaultCity"
+    private static let unitsKey = "units"
+    private static let notificationsEnabledKey = "notificationsEnabled"
+    private static let notificationTimeKey = "notificationTime"
+    
+    //MARK: - Fetch Times
     func saveLastWeatherFetchTime() {
-        let currentTime = Date().timeIntervalSince1970
-        UserDefaults.standard.set(currentTime, forKey: lastWeatherFetchTimeKey)
+        saveCurrentTime(for: UserPreferences.lastWeatherFetchTimeKey)
     }
     
     func getLastWeatherFetchTime() -> Double? {
-        return UserDefaults.standard.double(forKey: lastWeatherFetchTimeKey)
+        return UserDefaults.standard.double(forKey: UserPreferences.lastWeatherFetchTimeKey)
     }
     
     func saveLastAQIFetchTime() {
-        let currentTime = Date().timeIntervalSince1970
-        UserDefaults.standard.set(currentTime, forKey: lastAQIFetchTimeKey)
+        saveCurrentTime(for: UserPreferences.lastAQIFetchTimeKey)
     }
     
     func getLastAQIFetchTime() -> Double? {
-        return UserDefaults.standard.double(forKey: lastAQIFetchTimeKey)
+        return UserDefaults.standard.double(forKey: UserPreferences.lastAQIFetchTimeKey)
     }
     
-    // Caching data
+    //MARK: - Cached Data
     func saveCachedWeatherData(_ data: WeatherData) {
-        if let encodedData = try? JSONEncoder().encode(data) {
-            UserDefaults.standard.set(encodedData, forKey: cachedWeatherDataKey)
-        }
+        saveData(data, forKey: UserPreferences.cachedWeatherDataKey)
     }
     
     func getCachedWeatherData() -> WeatherData? {
-        if let savedData = UserDefaults.standard.data(forKey: cachedWeatherDataKey),
-           let decodedData = try? JSONDecoder().decode(WeatherData.self, from: savedData) {
-            return decodedData
-        }
-        return nil
+        return getData(forKey: UserPreferences.cachedWeatherDataKey)
     }
     
     func saveCachedAQIData(_ data: AQIData) {
-        if let encodedData = try? JSONEncoder().encode(data) {
-            UserDefaults.standard.set(encodedData, forKey: cachedAQIDataKey)
-        }
-        
+        saveData(data, forKey: UserPreferences.cachedAQIDataKey)
     }
     
     func getCachedAQIData() -> AQIData? {
-        if let savedData = UserDefaults.standard.data(forKey: cachedAQIDataKey),
-           let decodedData = try? JSONDecoder().decode(AQIData.self, from: savedData) {
-            return decodedData
-        }
-        return nil
+        return getData(forKey: UserPreferences.cachedAQIDataKey)
     }
     
-    // Default City location preferences
+    //MARK: - City Preferences
     static func saveDefaultCity(cityName: String) {
-        UserDefaults.standard.set(cityName, forKey: "defaultCity")
+        UserDefaults.standard.set(cityName, forKey: defaultCityKey)
     }
     
     static func loadDefaultCity() -> String? {
-        return UserDefaults.standard.string(forKey: "defaultCity")
+        return UserDefaults.standard.string(forKey: defaultCityKey)
     }
     
     static func clearDefaultCity() {
-        UserDefaults.standard.removeObject(forKey: "defaultCity")
+        UserDefaults.standard.removeObject(forKey: defaultCityKey)
     }
     
-    // Units of Measurement preferences
+    //MARK: - Units of Measurement Preferences
     static func saveUnits(_ units: String) {
-        UserDefaults.standard.set(units, forKey: "units")
+        UserDefaults.standard.set(units, forKey: unitsKey)
     }
     
     static func loadUnits() -> String {
-        return UserDefaults.standard.string(forKey: "units") ?? "metric"
+        return UserDefaults.standard.string(forKey: unitsKey) ?? "metric"
     }
     
-    // Push Notifications preferences
+    //MARK: - Push Notifications Preferences
     static func saveNotificationPreference(_ isEnabled: Bool) {
-        UserDefaults.standard.set(isEnabled, forKey: "notificationsEnabled")
+        UserDefaults.standard.set(isEnabled, forKey: notificationsEnabledKey)
     }
     
     static func loadNotificationPreference() -> Bool {
-        UserDefaults.standard.bool(forKey: "notificationsEnabled")
+        UserDefaults.standard.bool(forKey: notificationsEnabledKey)
     }
     
-    // Daily notification time
     static func saveNotificationDailyTime(_ date: Date) {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         let timeString = formatter.string(from: date)
-        UserDefaults.standard.set(timeString, forKey: "notificationTime")
+        UserDefaults.standard.set(timeString, forKey: notificationTimeKey)
     }
     
     static func loadNotificationDailyTime() -> Date {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
         
-        if let timeString = UserDefaults.standard.string(forKey: "notificationTime"),
+        if let timeString = UserDefaults.standard.string(forKey: notificationTimeKey),
            let date = formatter.date(from: timeString) {
             return date
-        } else {
-            return Date()
+        }
+        return Date()
+    }
+    
+    //MARK: - Helper Methods
+    private func saveCurrentTime(for key: String) {
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: key)
+    }
+    
+    private func saveData<T: Encodable>(_ data: T, forKey key: String) {
+        if let encodedData = try? JSONEncoder().encode(data) {
+            UserDefaults.standard.set(encodedData, forKey: key)
         }
     }
     
+    private func getData<T: Decodable>(forKey key: String) -> T? {
+        if let savedData = UserDefaults.standard.data(forKey: key) {
+            return try? JSONDecoder().decode(T.self, from: savedData)
+        }
+        return nil
+    }
 }

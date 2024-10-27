@@ -9,11 +9,12 @@ import SwiftUI
 
 struct K {
     
-    // OpenWeatherMap's API Related
+    //MARK: - OpenWeatherMap API
     static let apiKey = "YOUR_API_KEY_HERE"
     static let baseUrl = "https://api.openweathermap.org/data/2.5"
     
-    // Color Palette
+    //MARK: - Color Palette
+    // Dark theme colors for the app background and elements
     struct DarkColors {
         static let background = Color(red: 0.10, green: 0.11, blue: 0.12)
         static let white = Color(red: 0.98, green: 0.99, blue: 1)
@@ -22,6 +23,7 @@ struct K {
         static let yellow = Color(red: 0.98, green: 0.74, blue: 0.28)
     }
     
+    // Air Quality Index colors based on AQI values
     struct AQIColors {
         static let purple = Color(red: 0.75, green: 0.51, blue: 0.98)
         static let red = Color(red: 0.90, green: 0.11, blue: 0.21)
