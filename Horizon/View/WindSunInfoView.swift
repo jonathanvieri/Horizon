@@ -14,6 +14,10 @@ struct WindSunInfoView: View {
     let sunset: Double
     let timezone: Int
     
+    private var units: String {
+        UserPreferences.loadUnits()
+    }
+    
     var body: some View {
         ZStack {
             // Rounded Rectangle which acts as the frame
@@ -29,7 +33,7 @@ struct WindSunInfoView: View {
                 HStack {
                     WindSunInfoItem(
                         symbol: "wind.circle.fill",
-                        value: String(format: "%.1f km/h", speed),
+                        value: formattedWindSpeed(),
                         label: "Wind Speed"
                     )
                     Spacer()
@@ -56,6 +60,17 @@ struct WindSunInfoView: View {
                 .padding(.horizontal, 64)
                 
             }
+        }
+    }
+    
+    // Method to format wind speed based on units
+    private func formattedWindSpeed() -> String {
+        if units == "metric" {
+            let speedInKmh = speed * 3.6
+            return String(format: "%.1f km/h", speedInKmh)
+        } else {
+            let speedInMph = speed * 2.2369
+            return String(format: "%.1f mph", speedInMph)
         }
     }
 }

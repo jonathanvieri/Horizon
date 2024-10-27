@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct WeatherData : Decodable {
+struct WeatherData: Decodable {
     let name: String
     let weather: [Weather]
     let main: Main
@@ -17,13 +17,13 @@ struct WeatherData : Decodable {
 }
 
 //MARK: - Weather
-struct Weather : Decodable {
+struct Weather: Decodable {
     let id: Int
     let description: String
 }
 
 //MARK: - Main
-struct Main : Decodable {
+struct Main: Decodable {
     let temp: Double
     let tempMin: Double
     let tempMax: Double
@@ -39,13 +39,13 @@ struct Main : Decodable {
 }
 
 //MARK: - Wind
-struct Wind : Decodable {
+struct Wind: Decodable {
     let speed: Double
     let deg: Int
 }
 
 //MARK: - Sys
-struct Sys : Decodable {
+struct Sys: Decodable {
     let sunrise: Double
     let sunset: Double
 }
