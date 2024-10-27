@@ -25,7 +25,8 @@
 - **Data Caching for Offline Access**: Cached data for previously fetched weather information enables offline access and reduces data usage.
 
 ## Technical Overview
--
+- **SwiftUI**: Used for building the user interface, with a focus on simplicity and responsiveness.
+- 
 
 ## Usage
 
