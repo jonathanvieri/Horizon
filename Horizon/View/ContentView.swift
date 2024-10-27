@@ -23,6 +23,12 @@ struct ContentView: View {
                     .ignoresSafeArea()
                 
                 ScrollView {
+                    if weatherViewModel.isOffline {
+                        Text("You are viewing cached data due to connectivity issues")
+                            .foregroundStyle(.red)
+                            .padding()
+                    }
+                    
                     if weatherViewModel.isLoading {
                         ProgressView("Loading Weather Data...")
                             .foregroundStyle(.white)

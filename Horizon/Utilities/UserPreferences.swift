@@ -8,6 +8,34 @@
 import Foundation
 
 class UserPreferences {
+    // Keys
+    private let lastFetchTimeKey = "lastFetchTime"
+    private let cachedWeatherDataKey = "cachedWeatherData"
+    
+    // Last fetch
+    func saveLastFetchTime() {
+        let currentTime = Date().timeIntervalSince1970
+        UserDefaults.standard.set(currentTime, forKey: lastFetchTimeKey)
+    }
+    
+    func getLastFetchTime() -> Double? {
+        return UserDefaults.standard.double(forKey: lastFetchTimeKey)
+    }
+    
+    // Caching data
+    func saveCachedWeatherData(_ data: WeatherData) {
+        if let encodedData = try? JSONEncoder().encode(data) {
+            UserDefaults.standard.set(encodedData, forKey: cachedWeatherDataKey)
+        }
+    }
+    
+    func getCachedWeatherData() -> WeatherData? {
+        if let savedData = UserDefaults.standard.data(forKey: cachedWeatherDataKey),
+           let decodedData = try? JSONDecoder().decode(WeatherData.self, from: savedData) {
+            return decodedData
+        }
+        return nil
+    }
     
     // Default City location preferences
     static func saveDefaultCity(cityName: String) {

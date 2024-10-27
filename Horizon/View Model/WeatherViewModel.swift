@@ -9,14 +9,18 @@ import Foundation
 import CoreLocation
 
 class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
+
+    private let weatherService = WeatherService()
+    private let locationManager = CLLocationManager()
+    private let userPreferences = UserPreferences()
+    private let cacheDuration: TimeInterval = 3600
+    
     @Published var weatherData: WeatherData?
     @Published var errorMessage: String?
     @Published var isLoading: Bool = false
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var locationDenied: Bool = false
-    
-    private let weatherService = WeatherService()
-    private let locationManager = CLLocationManager()
+    @Published var isOffline: Bool = false
     
     override init() {
         super.init()
@@ -28,9 +32,19 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // Fetch current weather data using Latitude and Longitude
     func fetchWeather(for location: CLLocationCoordinate2D) {
+        
+        // Check if cached data can be used
+        if let cachedData = shouldUseCachedData() {
+            print("Using cached data")
+            self.weatherData = cachedData
+            self.isOffline = false
+            return
+        }
+        
+        // Fetch new data from API if cached data is outdated or does not exist
         isLoading = true
         errorMessage = nil
-        
+        print("Fetching new data")
         let units = UserPreferences.loadUnits()
         
         weatherService.fetchWeatherData(lat: location.latitude, lon: location.longitude, units: units) { [weak self] result in
@@ -40,7 +54,16 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // Fetch current weather data using City name
     func fetchWeather(for city: String) {
-        // Start loading state and clear any previous error message
+        
+        // Check if cached data can be used
+        if let cachedData = shouldUseCachedData() {
+            print("Using cached data")
+            self.weatherData = cachedData
+            self.isOffline = false
+            return
+        }
+        
+        // Fetch new data from API if cached data is outdated or does not exist
         isLoading = true
         errorMessage = nil
         
@@ -70,9 +93,18 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
             switch result {
             case .success(let weather):
                 self.weatherData = weather
+                self.userPreferences.saveLastFetchTime()
+                self.userPreferences.saveCachedWeatherData(weather)
+                self.isOffline = false
                 self.errorMessage = nil
             case .failure(let error):
+                // If fetch fails, load cached data if exist
+                self.isOffline = true
                 self.handleWeatherServiceError(error)
+                
+                if let cachedData = self.userPreferences.getCachedWeatherData() {
+                    self.weatherData = cachedData
+                }
             }
         }
     }
@@ -138,5 +170,15 @@ class WeatherViewModel : NSObject, ObservableObject, CLLocationManagerDelegate {
     // Will and should be called ONLY if the user wants to setup daily notifications
     func requestAlwaysAuthorization() {
         locationManager.requestAlwaysAuthorization()
+    }
+    
+    // Method for checking if we should use cached data or not
+    private func shouldUseCachedData() -> WeatherData? {
+        guard let lastFetchTime = userPreferences.getLastFetchTime(),
+              let cachedData = userPreferences.getCachedWeatherData() else { return nil }
+        
+        let currentTime = Date().timeIntervalSince1970
+        let isCacheValid = (currentTime - lastFetchTime) < cacheDuration
+        return isCacheValid ? cachedData : nil
     }
 }
