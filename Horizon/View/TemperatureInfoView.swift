@@ -14,7 +14,6 @@ struct TemperatureInfoView: View {
     
     var body: some View {
         ZStack {
-            // Rounded Rectangle which acts as the frame
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .foregroundStyle(K.DarkColors.gray)
                 .frame(height: 125)
@@ -24,28 +23,28 @@ struct TemperatureInfoView: View {
             
             // Temperature Info Values
             HStack (spacing: 40) {
-                
                 TemperatureInfoItem(symbol: "thermometer.high", value: "\(maxTemp)°", label: "Max Temp")
-                
                 TemperatureInfoItem(symbol: "thermometer.low", value: "\(minTemp)°", label: "Min Temp")
-                
                 TemperatureInfoItem(symbol: "thermometer.variable.and.figure", value: "\(feelsLike)°", label: "Feels Like")
             }
         }
     }
 }
 
+//MARK: - Temperature Info Item
 struct TemperatureInfoItem: View {
     var symbol: String
     var value: String
     var label: String
+    
+    private let iconSize: CGFloat = 40
     
     var body: some View {
         VStack {
             Image(systemName: symbol)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 40, height: 40)
+                .frame(width: iconSize, height: iconSize)
                 .foregroundStyle(K.DarkColors.blue)
             
             Text(value)

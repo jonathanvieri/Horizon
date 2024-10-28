@@ -20,7 +20,6 @@ struct WindSunInfoView: View {
     
     var body: some View {
         ZStack {
-            // Rounded Rectangle which acts as the frame
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .foregroundStyle(K.DarkColors.gray)
                 .frame(height: 250)
@@ -29,7 +28,6 @@ struct WindSunInfoView: View {
                 .opacity(0.9)
             
             VStack (spacing: 30) {
-                
                 HStack {
                     WindSunInfoItem(
                         symbol: "wind.circle.fill",
@@ -63,18 +61,15 @@ struct WindSunInfoView: View {
         }
     }
     
-    // Method to format wind speed based on units
+    // Helper to format wind speed
     private func formattedWindSpeed() -> String {
-        if units == "metric" {
-            let speedInKmh = speed * 3.6
-            return String(format: "%.1f km/h", speedInKmh)
-        } else {
-            let speedInMph = speed * 2.2369
-            return String(format: "%.1f mph", speedInMph)
-        }
+        let speedInUnits = (units == "metric") ? speed * 3.6 : speed * 2.2369
+        let unitLabel = (units == "metric") ? "km/h" : "mph"
+        return String(format: "%.1f \(unitLabel)", speedInUnits)
     }
 }
 
+//MARK: - Item for displaying the Wind and Sun info
 struct WindSunInfoItem: View {
     var symbol: String
     var value: String
@@ -102,60 +97,61 @@ struct WindSunInfoItem: View {
     }
 }
 
-
-// Method for converting wind direction Degree to wind direction String
-func windDirection(for degree: Int) -> String {
-    switch degree {
-    case 0..<23:
-        return "\(degree)° N"
-    case 23..<45:
-        return "\(degree)° NNE"
-    case 45..<68:
-        return "\(degree)° NE"
-    case 68..<90:
-        return "\(degree)° ENE"
-    case 90..<113:
-        return "\(degree)° E"
-    case 113..<135:
-        return "\(degree)° ESE"
-    case 135..<158:
-        return "\(degree)° SE"
-    case 158..<180:
-        return "\(degree)° SSE"
-    case 180..<203:
-        return "\(degree)° S"
-    case 203..<225:
-        return "\(degree)° SSW"
-    case 225..<248:
-        return "\(degree)° SW"
-    case 248..<270:
-        return "\(degree)° WSW"
-    case 270..<293:
-        return "\(degree)° W"
-    case 293..<315:
-        return "\(degree)° WNW"
-    case 315..<338:
-        return "\(degree)° NW"
-    case 338..<360:
-        return "\(degree)° NNW"
-    default:
-        return "N/A"
+//MARK: - Helper Function
+extension WindSunInfoView {
+    
+    func windDirection(for degree: Int) -> String {
+        switch degree {
+        case 0..<23:
+            return "\(degree)° N"
+        case 23..<45:
+            return "\(degree)° NNE"
+        case 45..<68:
+            return "\(degree)° NE"
+        case 68..<90:
+            return "\(degree)° ENE"
+        case 90..<113:
+            return "\(degree)° E"
+        case 113..<135:
+            return "\(degree)° ESE"
+        case 135..<158:
+            return "\(degree)° SE"
+        case 158..<180:
+            return "\(degree)° SSE"
+        case 180..<203:
+            return "\(degree)° S"
+        case 203..<225:
+            return "\(degree)° SSW"
+        case 225..<248:
+            return "\(degree)° SW"
+        case 248..<270:
+            return "\(degree)° WSW"
+        case 270..<293:
+            return "\(degree)° W"
+        case 293..<315:
+            return "\(degree)° WNW"
+        case 315..<338:
+            return "\(degree)° NW"
+        case 338..<360:
+            return "\(degree)° NNW"
+        default:
+            return "N/A"
+        }
+    }
+    
+    // Method for formatting epoch double into "HH:mm" String format
+    func formatEpochIntoHour(for epochTime: Double, timezoneOffset: Int) -> String {
+        let date = Date(timeIntervalSince1970: epochTime)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        
+        // Apply the timezone using offset from JSON
+        let timezone = TimeZone(secondsFromGMT: timezoneOffset)
+        formatter.timeZone = timezone
+        
+        return formatter.string(from: date)
     }
 }
-
-// Method for formatting epoch double into "HH:mm" String format
-func formatEpochIntoHour(for epochTime: Double, timezoneOffset: Int) -> String {
-    let date = Date(timeIntervalSince1970: epochTime)
-    let formatter = DateFormatter()
-    formatter.dateFormat = "HH:mm"
-    
-    // Apply the timezone using offset from JSON
-    let timezone = TimeZone(secondsFromGMT: timezoneOffset)
-    formatter.timeZone = timezone
-    
-    return formatter.string(from: date)
-}
-
 
 #Preview {
     WindSunInfoView(speed: 20, degree: 313, sunrise: 1729722512, sunset: 1729766744, timezone: 25200)

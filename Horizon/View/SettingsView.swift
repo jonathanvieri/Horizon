@@ -29,75 +29,34 @@ struct SettingsView: View {
             
             Form {
                 
-                // Units of Measurement
-                Section {
-                    Picker(selection: $units) {
-                        Text("Metric").tag("metric")
-                        Text("Imperial").tag("imperial")
-                    } label: {
-                        Text("Units")
-                    }
-                    .pickerStyle(.segmented)
+                UnitsPickerView(selectedUnits: $units)
                     .onChange(of: units) { oldValue, newValue in
                         UserPreferences.saveUnits(newValue)
                     }
-                } header: {
-                    Text("Units of Measurement")
+                
+                NotificationsToggleView(notificationsEnabled: $notificationsEnabled) { newValue in
+                    UserPreferences.saveNotificationPreference(newValue)
+                    handleNotificationToggle(newValue)
                 }
-                .foregroundStyle(.white)
-                .font(.system(size: 16, weight: .bold))
-                .listRowBackground(K.DarkColors.background)
-                
-                
-                // Push Notifications
-                Section {
-                    Picker(selection: $notificationsEnabled) {
-                        Text("Off").tag(false)
-                        Text("On").tag(true)
-                    } label: {
-                        Text("Push Notifications")
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .onChange(of: notificationsEnabled) { oldValue, newValue in
-                        UserPreferences.saveNotificationPreference(newValue)
-                        
-                        if newValue {
-                            requestNotificationPermission()
-                        } else {
-                            // Remove scheduled notification when user disables it
-                            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["horizonDailyWeatherNotification"])
-                            print("Daily notification removed.")
-                        }
-                    }
-                } header: {
-                    Text("Push Notifications")
-                }
-                .foregroundStyle(.white)
-                .font(.system(size: 16, weight: .bold))
-                .listRowBackground(K.DarkColors.background)
-                
-                
-                // Conditionally show notification setup
+
                 if notificationsEnabled {
-                    
-                    Section {
-                        DatePicker("Notify me at", selection: $notificationDailyTime, displayedComponents: .hourAndMinute)
-                            .datePickerStyle(.graphical)
-                            .colorScheme(.dark)
-                            .onChange(of: notificationDailyTime) { oldValue, newValue in
-                                UserPreferences.saveNotificationDailyTime(newValue)
-                                scheduleDailyNotification(at: newValue)
-                            }
-                    } header: {
-                        Text("Daily Notification Settings")
+                    NotificationSettingsView(dailyNotificationTime: $notificationDailyTime) { newTime in
+                        UserPreferences.saveNotificationDailyTime(newTime)
+                        scheduleDailyNotification(at: newTime)
                     }
-                    .foregroundStyle(.white)
-                    .font(.system(size: 16, weight: .bold))
-                    .listRowBackground(K.DarkColors.background)
-                    
                 }
             }
             .scrollContentBackground(.hidden)
+        }
+    }
+    
+    // Handle notification toggle
+    private func handleNotificationToggle(_ isEnabled: Bool) {
+        if isEnabled {
+            requestNotificationPermission()
+        } else {
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["horizonDailyWeatherNotification"])
+            print("Daily notification removed.")
         }
     }
     
@@ -175,7 +134,73 @@ struct SettingsView: View {
     
 }
 
+//MARK: - Units Picker View
+struct UnitsPickerView: View {
+    @Binding var selectedUnits: String
+    
+    var body: some View {
+        Section {
+            Picker(selection: $selectedUnits) {
+                Text("Metric").tag("metric")
+                Text("Imperial").tag("imperial")
+            } label: {
+                Text("Units")
+            }
+            .pickerStyle(.segmented)
+        } header: {
+            Text("Units of Measurement")
+        }
+        .foregroundStyle(.white)
+        .font(.system(size: 16, weight: .bold))
+        .listRowBackground(K.DarkColors.background)
 
+    }
+}
+
+//MARK: - Notifications Toggle View
+struct NotificationsToggleView: View {
+    @Binding var notificationsEnabled: Bool
+    let onToggle: (Bool) -> Void
+    
+    var body: some View {
+        Section {
+            Picker(selection: $notificationsEnabled) {
+                Text("Off").tag(false)
+                Text("On").tag(true)
+            } label: {
+                Text("Push Notifications")
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .onChange(of: notificationsEnabled) { oldValue, newValue in
+                onToggle(newValue)
+            }
+        } header: {
+            Text("Push Notifications")
+        }
+        .foregroundStyle(.white)
+        .font(.system(size: 16, weight: .bold))
+        .listRowBackground(K.DarkColors.background)
+    }
+}
+
+//MARK: - Notification Settings View
+struct NotificationSettingsView: View {
+    @Binding var dailyNotificationTime: Date
+    let onTimeChange: (Date) -> Void
+    
+    var body: some View {
+        Section {
+            DatePicker("Notify me at", selection: $dailyNotificationTime, displayedComponents: .hourAndMinute)
+                .datePickerStyle(.graphical)
+                .colorScheme(.dark)
+        } header: {
+            Text("Daily Notification Settings")
+        }
+        .foregroundStyle(.white)
+        .font(.system(size: 16, weight: .bold))
+        .listRowBackground(K.DarkColors.background)
+    }
+}
 
 #Preview {
     SettingsView()

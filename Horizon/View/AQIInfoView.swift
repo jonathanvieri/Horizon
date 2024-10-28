@@ -11,9 +11,8 @@ struct AQIInfoView: View {
     @ObservedObject var aqiViewModel: AQIViewModel
     
     var body: some View {
-        
         ZStack {
-            // Rounded Rectangle which acts as the frame
+            // Frame background
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .foregroundStyle(K.DarkColors.gray)
                 .frame(height: 125)
@@ -22,16 +21,9 @@ struct AQIInfoView: View {
                 .opacity(0.9)
             
             HStack(spacing: 8) {
+                AQIValueBadge(value: aqiViewModel.aqiValue, color: aqiViewModel.aqiColor)
                 
-                ZStack {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .foregroundStyle(aqiViewModel.aqiColor)
-                        .frame(width: 80, height: 80)
-                    
-                    Text("\(aqiViewModel.aqiValue)")
-                        .font(.system(size: 32, weight: .bold))
-                }
-                
+                // Air Quality Description
                 Text("Air Quality is ")
                     .font(.system(size: 18, weight: .regular))
                     .foregroundStyle(.white)
@@ -42,7 +34,7 @@ struct AQIInfoView: View {
                 
                 Spacer()
                 
-                // Arrow Icon
+                // Navigation Link with Arrow Icon
                 NavigationLink(destination: AQIDetailView(aqiViewModel: aqiViewModel)) {
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.white)
@@ -55,9 +47,29 @@ struct AQIInfoView: View {
     }
 }
 
+//MARK: - AQI Value Badge
+struct AQIValueBadge : View {
+    var value: Int
+    var color: Color
+    private let badgeSize: CGFloat = 80
+    private let fontSize: CGFloat = 32
+    
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .foregroundStyle(color)
+                .frame(width: badgeSize, height: badgeSize)
+            
+            Text("\(value)")
+                .font(.system(size: fontSize, weight: .bold))
+                .foregroundStyle(.white)
+        }
+    }
+}
+
 #Preview {
     let aqiViewModel = AQIViewModel()
-    aqiViewModel.aqiValue = 3
+    aqiViewModel.aqiValue = 5
     aqiViewModel.aqiDescription = "Moderate"
     aqiViewModel.aqiColor = K.AQIColors.green
     return AQIInfoView(aqiViewModel: aqiViewModel)
