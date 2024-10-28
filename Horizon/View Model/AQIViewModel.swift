@@ -28,10 +28,20 @@ class AQIViewModel: ObservableObject {
             updateAQIValues(cachedData)
             return
         }
-        
+
+        print("Not using cached AQI data")
+        fetchAQIDataFromAPI(for: location)
+    }
+    
+    func forceFetchAQIData(for location: CLLocation) {
+        print("Not using cached AQI data")
+        fetchAQIDataFromAPI(for: location)
+    }
+    
+    private func fetchAQIDataFromAPI(for location: CLLocation) {
         resetAQIValues()
         isLoading = true
-      
+        
         let lat = location.coordinate.latitude
         let lon = location.coordinate.longitude
         
@@ -50,7 +60,6 @@ class AQIViewModel: ObservableObject {
             }
         }
     }
-    
     
     // Converts AQI integer value to a descriptive string
     private func aqiToDescription(for aqi: Int) -> String {

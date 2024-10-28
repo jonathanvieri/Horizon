@@ -66,6 +66,8 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         fetchWeatherData(latitude: location.latitude, longitude: location.longitude)
     }
     
+    
+    
     // Fetches current weather data using a city name
     func fetchWeather(for city: String, completion: ((Result<WeatherData, WeatherServiceError>) -> Void)? = nil) {
         if let cachedData = shouldUseCachedData() {
@@ -85,7 +87,15 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         resetWeatherState()  // Reset loading state to indicate fresh fetch
         fetchWeatherData(cityName: city, completion: completion)
     }
-
+    
+    func fetchFreshAQIData(for city: String) {
+        getCoordinateFromAddress(city) { coordinate in
+            if let coordinate = coordinate {
+                self.aqiViewModel.forceFetchAQIData(for: coordinate)
+            }
+        }
+        
+    }
     
     // Performs the network request for weather data based on coordinates
     private func fetchWeatherData(latitude: Double, longitude: Double) {
@@ -169,19 +179,20 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         DispatchQueue.main.async {
             self.userLocation = location.coordinate
+            let currentLocation = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
             
             if self.isForceRefresh {
                 self.forceFetchCurrentLocation(location: location.coordinate)
+                self.aqiViewModel.forceFetchAQIData(for: currentLocation)
+                print("Force Fetching")
             } else {
+                print("Not force fetching")
                 self.fetchWeather(for: location.coordinate)
+                self.aqiViewModel.fetchAQIData(for: currentLocation)
             }
             
             self.isForceRefresh = false
             self.locationManager.stopUpdatingLocation()
-            
-            // Trigger AQI update based on the latest location
-            let currentLocation = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
-            self.aqiViewModel.fetchAQIData(for: currentLocation)
         }
     }
     
@@ -203,6 +214,20 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         print("Failed to get user location: \(error.localizedDescription)")
         DispatchQueue.main.async {
             self.errorMessage = "Unable to get your location. Please try again later."
+        }
+    }
+    
+    private func getCoordinateFromAddress(_ address: String, completion: @escaping (CLLocation?) -> Void) {
+        CLGeocoder().geocodeAddressString(address) { placemarks, error in
+            if error != nil {
+                print("error: \(error as Optional)")
+            } else {
+                if let placemark = placemarks?.first,
+                   let coord = placemark.location?.coordinate {
+                    return completion(CLLocation(latitude: coord.latitude, longitude: coord.longitude))
+                }
+            }
+            return completion(nil)
         }
     }
 }

@@ -176,6 +176,7 @@ struct ContentView: View {
     private func forceRefreshData() {
         if let defaultCity = UserPreferences.loadDefaultCity() {
             weatherViewModel.fetchFreshWeather(for: defaultCity)
+            weatherViewModel.fetchFreshAQIData(for: defaultCity)
         }
     }
 }
