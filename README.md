@@ -15,6 +15,18 @@
 
 
 ## Screenshots
+<p align="left">
+  <img src="https://github.com/jonathanvieri/Horizon/blob/main/images/weather-screen.png" height="400">
+  &emsp;&emsp;
+  <img src="https://github.com/jonathanvieri/Horizon/blob/main/images/search-screen.png" height="400">
+</p>
+<br>
+<p align="left">
+  <img src="https://github.com/jonathanvieri/Horizon/blob/main/images/aqi-detail-screen.png" height="400">
+  &emsp;&emsp;
+  <img src="https://github.com/jonathanvieri/Horizon/blob/main/images/settings-screen.png" height="400">
+</p>
+
 
 ## Features
 - **View Current Weather Data**: Access up-to-date weather conditions, including current temperature, “feels like” temperature, and detailed weather descriptions for your location.
