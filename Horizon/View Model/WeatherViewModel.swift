@@ -14,6 +14,8 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let userPreferences = UserPreferences()
     private let cacheDuration: TimeInterval = 3600
     
+    var aqiViewModel: AQIViewModel
+    
     @Published var weatherData: WeatherData?
     @Published var errorMessage: String?
     @Published var isLoading: Bool = false
@@ -21,7 +23,8 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var locationDenied: Bool = false
     @Published var isOffline: Bool = false
     
-    override init() {
+    init(aqiViewModel: AQIViewModel) {
+        self.aqiViewModel = aqiViewModel
         super.init()
         configureLocationManager()
     }
@@ -153,6 +156,10 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             self.userLocation = location.coordinate
             self.fetchWeather(for: location.coordinate)
             self.locationManager.stopUpdatingLocation()
+            
+            // Trigger AQI update based on the latest location
+            let currentLocation = CLLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+            self.aqiViewModel.fetchAQIData(for: currentLocation)
         }
     }
     

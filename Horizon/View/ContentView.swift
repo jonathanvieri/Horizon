@@ -11,8 +11,14 @@ import CoreLocation
 struct ContentView: View {
     
     // ViewModel Instances
-    @StateObject private var weatherViewModel = WeatherViewModel()
+    @StateObject private var weatherViewModel: WeatherViewModel
     @StateObject private var aqiViewModel = AQIViewModel()
+    
+    init() {
+        let aqiViewModel = AQIViewModel()
+        _aqiViewModel = StateObject(wrappedValue: aqiViewModel)
+        _weatherViewModel = StateObject(wrappedValue: WeatherViewModel(aqiViewModel: aqiViewModel))
+    }
     
     var body: some View {
         
@@ -27,7 +33,6 @@ struct ContentView: View {
                     if weatherViewModel.isLoading {
                         ProgressView("Loading Weather Data...")
                             .foregroundStyle(.white)
-                        
                     } else if let weather = weatherViewModel.weatherData {
                         weatherDataView(weather: weather)
                     } else if let errorMessage = weatherViewModel.errorMessage {
@@ -57,7 +62,6 @@ struct ContentView: View {
                 
             }
         }
-       
         .onAppear {
             refreshData()
         }
@@ -107,11 +111,6 @@ struct ContentView: View {
                     .foregroundStyle(.red)
             } else {
                 AQIInfoView(aqiViewModel: aqiViewModel)
-            }
-        }
-        .onAppear {
-            if let location = weatherViewModel.userLocation {
-                aqiViewModel.fetchAQIData(for: CLLocation(latitude: location.latitude, longitude: location.longitude))
             }
         }
     }
