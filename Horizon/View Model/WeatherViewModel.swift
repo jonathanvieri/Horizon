@@ -34,6 +34,16 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.startUpdatingLocation()
     }
     
+    // Method for user to manually request their current location
+    func requestLocation() {
+        locationManager.requestLocation()
+    }
+    
+    // Will and should be called ONLY if the user wants to setup daily notifications
+    func requestAlwaysAuthorization() {
+        locationManager.requestAlwaysAuthorization()
+    }
+    
     // Fetches current weather data using latitude and longitude.
     func fetchWeather(for location: CLLocationCoordinate2D) {
         if let cachedData = shouldUseCachedData() {
@@ -47,15 +57,16 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // Fetches current weather data using a city name
-    func fetchWeather(for city: String) {
+    func fetchWeather(for city: String, completion: ((Result<WeatherData, WeatherServiceError>) -> Void)? = nil) {
         if let cachedData = shouldUseCachedData() {
             print("Using cached data")
             updateWeatherData(with: cachedData, isOffline: false)
+            completion?(.success(cachedData))
             return
         }
         
         resetWeatherState()
-        fetchWeatherData(cityName: city)
+        fetchWeatherData(cityName: city, completion: completion)
     }
     
     // Performs the network request for weather data based on coordinates
@@ -67,10 +78,11 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // Performs the network request for weather data based on city name
-    private func fetchWeatherData(cityName: String) {
+    private func fetchWeatherData(cityName: String, completion: ((Result<WeatherData, WeatherServiceError>) -> Void)? = nil) {
         let units = UserPreferences.loadUnits()
         weatherService.fetchWeatherData(cityName: cityName, units: units) { [weak self] result in
             self?.handleWeatherResult(result)
+            completion?(result)
         }
     }
     
