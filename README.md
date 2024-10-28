@@ -47,7 +47,14 @@
 - **Data Caching**: Caches fetched weather data for offline access, reducing network requests and improving data availability in low-bandwidth conditions.
 
 ## Usage
-
+1. **View Current Weather**: Launch Horizon to instantly view the latest weather data for your current or default location, including temperature, weather conditions, and air quality index.
+2. **Location-Based Weather Updates**: Tap the location icon in the toolbar to fetch weather data based on your current location. If location services are enabled, Horizon will update automatically.
+3. **Search for Weather** in Other Cities: Tap the search icon to look up weather data for any city. You can choose to set the searched city as your default location for future use.
+4. **Check Air Quality**: The AQI indicator on the main screen shows current air quality. Tap the AQI view for more details, including health recommendations and pollution levels.
+5. **Offline Access**: Horizon saves recent weather data locally, allowing you to view previously fetched weather details even without an internet connection.
+6. **Customize Units and Notifications**:
+   - **Units of Measurement**: Toggle between Celsius and Fahrenheit in the settings.
+   - **Daily Notifications**: Set a preferred time for receiving daily weather notifications to stay updated on the forecast.
 
 ## License
 This project is licensed under the [MIT License](https://github.com/jonathanvieri/Chooaca/blob/master/LICENSE)
