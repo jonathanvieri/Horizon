@@ -40,8 +40,6 @@ class WeatherService: ObservableObject {
     
     // Performs a network request and decodes the response
     private func performNetworkRequest(with url: URL, completion: @escaping (Result<WeatherData, WeatherServiceError>) -> Void) {
-        print("URL: \(url)")
-        
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error as? URLError {
                 completion(.failure(.networkError(error)))

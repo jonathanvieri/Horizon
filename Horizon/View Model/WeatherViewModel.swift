@@ -13,6 +13,7 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     private let userPreferences = UserPreferences()
     private let cacheDuration: TimeInterval = 3600
+    private var isForceRefresh = false
     
     var aqiViewModel: AQIViewModel
     
@@ -38,7 +39,8 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // Method for user to manually request their current location
-    func requestLocation() {
+    func requestLocation(ignoreCache: Bool = false) {
+        self.isForceRefresh = ignoreCache
         locationManager.requestLocation()
     }
     
@@ -59,10 +61,15 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         fetchWeatherData(latitude: location.latitude, longitude: location.longitude)
     }
     
+    func forceFetchCurrentLocation(location: CLLocationCoordinate2D) {
+        resetWeatherState()
+        fetchWeatherData(latitude: location.latitude, longitude: location.longitude)
+    }
+    
     // Fetches current weather data using a city name
     func fetchWeather(for city: String, completion: ((Result<WeatherData, WeatherServiceError>) -> Void)? = nil) {
         if let cachedData = shouldUseCachedData() {
-            print("Using cached data")
+            print("Using cached weather - city data")
             updateWeatherData(with: cachedData, isOffline: false)
             completion?(.success(cachedData))
             return
@@ -71,6 +78,14 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         resetWeatherState()
         fetchWeatherData(cityName: city, completion: completion)
     }
+    
+    // Fetches fresh weather data for a city, bypassing cache
+    func fetchFreshWeather(for city: String, completion: ((Result<WeatherData, WeatherServiceError>) -> Void)? = nil) {
+        print("Fetching fresh weather data - city data")
+        resetWeatherState()  // Reset loading state to indicate fresh fetch
+        fetchWeatherData(cityName: city, completion: completion)
+    }
+
     
     // Performs the network request for weather data based on coordinates
     private func fetchWeatherData(latitude: Double, longitude: Double) {
@@ -154,7 +169,14 @@ class WeatherViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         DispatchQueue.main.async {
             self.userLocation = location.coordinate
-            self.fetchWeather(for: location.coordinate)
+            
+            if self.isForceRefresh {
+                self.forceFetchCurrentLocation(location: location.coordinate)
+            } else {
+                self.fetchWeather(for: location.coordinate)
+            }
+            
+            self.isForceRefresh = false
             self.locationManager.stopUpdatingLocation()
             
             // Trigger AQI update based on the latest location

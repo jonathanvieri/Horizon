@@ -49,7 +49,7 @@ struct ContentView: View {
                     Image(systemName: "location.fill")
                         .foregroundStyle(.white)
                         .onTapGesture {
-                            weatherViewModel.requestLocation()
+                            weatherViewModel.requestLocation(ignoreCache: true)
                         }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -135,7 +135,7 @@ struct ContentView: View {
         Image(systemName: "arrow.clockwise")
             .foregroundStyle(.white)
             .onTapGesture {
-                refreshData()
+                forceRefreshData()
             }
     }
     
@@ -143,7 +143,7 @@ struct ContentView: View {
         NavigationLink {
             SearchView()
                 .onDisappear {
-                    refreshData()
+                    forceRefreshData()
                 }
         } label: {
             Image(systemName: "magnifyingglass")
@@ -170,6 +170,12 @@ struct ContentView: View {
             weatherViewModel.fetchWeather(for: defaultCity)
         } else {
             weatherViewModel.requestLocation()
+        }
+    }
+    
+    private func forceRefreshData() {
+        if let defaultCity = UserPreferences.loadDefaultCity() {
+            weatherViewModel.fetchFreshWeather(for: defaultCity)
         }
     }
 }
