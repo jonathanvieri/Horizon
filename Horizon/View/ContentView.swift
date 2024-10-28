@@ -156,7 +156,7 @@ struct ContentView: View {
             SettingsView()
                 .environmentObject(weatherViewModel)
                 .onDisappear {
-                    refreshData()
+                    forceRefreshData()
                 }
         } label: {
             Image(systemName: "gearshape.fill")
