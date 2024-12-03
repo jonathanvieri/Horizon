@@ -57,4 +57,4 @@
    - **Daily Notifications**: Set a preferred time for receiving daily weather notifications to stay updated on the forecast.
 
 ## License
-This project is licensed under the [MIT License](https://github.com/jonathanvieri/Chooaca/blob/master/LICENSE)
+This project is licensed under the [MIT License](https://github.com/jonathanvieri/Horizon/blob/main/LICENSE)
